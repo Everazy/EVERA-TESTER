@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Status Pembayaran - Everastore</title>
+  <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/Everazy/EVERASTORE/refs/heads/main/EVERASTORE.jpeg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    @keyframes spin   { to { transform: rotate(360deg); } }
+    @keyframes pop    { 0%{transform:scale(0);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)} }
+    .spin   { animation: spin 1s linear infinite; }
+    .pop    { animation: pop 0.5s cubic-bezier(.175,.885,.32,1.275) forwards; }
+    .fadeup { animation: fadeUp 0.4s ease forwards; }
+    .d1{animation-delay:.1s;opacity:0}.d2{animation-delay:.25s;opacity:0}
+    .d3{animation-delay:.4s;opacity:0}.d4{animation-delay:.55s;opacity:0}
+    .akun-box {
+      background:#f8fafc; border:1.5px dashed #a5b4fc; border-radius:1rem;
+      padding:14px 48px 14px 16px; font-family:monospace; font-size:13px;
+      font-weight:700; color:#1e293b; word-break:break-all; white-space:pre-wrap;
+      position:relative; min-height:52px;
+    }
+    .copy-btn {
+      position:absolute; top:10px; right:10px; background:#eef2ff; border:none;
+      border-radius:8px; padding:5px 10px; font-size:11px; font-weight:800;
+      color:#4f46e5; cursor:pointer; transition:background .15s; font-family:'Plus Jakarta Sans',sans-serif;
+    }
+    .copy-btn:hover{background:#e0e7ff} .copy-btn:active{transform:scale(.96)}
+    .progress-bar{height:4px;background:#e2e8f0;border-radius:99px;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#4f46e5,#818cf8);border-radius:99px;transition:width .5s ease}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <nav class="bg-white/90 backdrop-blur border-b sticky top-0 z-50 px-6 py-4">
+    <div class="max-w-lg mx-auto flex justify-between items-center">
+      <a href="/" class="select-none">
+        <span class="font-extrabold text-indigo-600 text-xl uppercase tracking-tighter">Everastore</span>
+        <p class="text-[8px] text-slate-400 font-bold uppercase tracking-[0.2em]">Premium Digital</p>
+      </a>
+    </div>
+  </nav>
+
+  <main class="flex-1 flex items-start justify-center px-4 py-10">
+    <div class="w-full max-w-md">
+
+      <!-- STATE: MENUNGGU -->
+      <div id="state-loading" class="text-center">
+        <div class="w-20 h-20 rounded-[1.8rem] bg-indigo-50 border-2 border-indigo-200 flex items-center justify-center mx-auto mb-5">
+          <svg class="spin w-10 h-10 text-indigo-500" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z"/>
+          </svg>
+        </div>
+        <h1 class="font-extrabold text-xl text-slate-800 mb-2">Menunggu Pembayaran</h1>
+        <p class="text-sm text-slate-500 font-medium mb-6">
+          Selesaikan pembayaran QRIS-mu. Akun akan muncul otomatis di halaman ini setelah terkonfirmasi.
+        </p>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-4 text-left shadow-sm">
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Detail Pesanan</p>
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-box text-indigo-400 text-xs"></i>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-semibold">Produk</p>
+              <p class="text-sm font-bold text-slate-800" id="info-produk">—</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-hashtag text-slate-400 text-xs"></i>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-semibold">No. Referensi</p>
+              <p class="text-sm font-bold text-slate-700 font-mono" id="info-ref">—</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+          <div class="flex justify-between items-center mb-2">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mengecek Status</p>
+            <span id="poll-counter" class="text-[10px] font-bold text-indigo-400">0 / 30</span>
+          </div>
+          <div class="progress-bar mb-2">
+            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+          </div>
+          <p class="text-[11px] text-slate-400 font-semibold text-center" id="poll-msg">Menghubungi server...</p>
+        </div>
+      </div>
+
+      <!-- STATE: SUKSES + AKUN -->
+      <div id="state-sukses" class="hidden text-center">
+        <div class="pop w-20 h-20 rounded-[1.8rem] bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center mx-auto mb-5">
+          <i class="fas fa-check-circle text-emerald-500 text-4xl"></i>
+        </div>
+        <h1 class="fadeup d1 font-extrabold text-2xl text-slate-900 mb-1">Pembayaran Berhasil! 🎉</h1>
+        <p class="fadeup d2 text-sm text-slate-500 font-medium mb-6">Berikut detail akun pesananmu. Screenshot sekarang!</p>
+        <div class="fadeup d3 bg-white border border-slate-200 rounded-2xl p-5 mb-4 text-left shadow-sm">
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
+            <i class="fas fa-key text-amber-400 mr-1"></i> Detail Akun Kamu
+          </p>
+          <div class="akun-box" id="akun-box">
+            —
+            <button class="copy-btn" onclick="salinAkun()"><i class="fas fa-copy mr-1"></i>Salin</button>
+          </div>
+          <p class="text-[10px] text-slate-400 font-semibold mt-3 text-center">
+            ⚠️ Simpan akun ini sekarang. Tidak bisa ditampilkan ulang.
+          </p>
+        </div>
+        <div class="fadeup d3 bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-4 text-left">
+          <p class="text-xs font-semibold text-slate-600">📦 Produk : <span class="font-bold text-slate-800" id="sukses-produk">—</span></p>
+          <p class="text-xs font-semibold text-slate-600 mt-1">🔖 Ref &nbsp;&nbsp;&nbsp;: <span class="font-mono font-bold text-slate-800" id="sukses-ref">—</span></p>
+        </div>
+        <div class="fadeup d4 flex flex-col gap-3">
+          <a href="/" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold text-sm rounded-2xl transition-all flex items-center justify-center gap-2">
+            <i class="fas fa-home"></i> Kembali ke Toko
+          </a>
+          <a href="https://wa.me/6285750173207" target="_blank"
+             class="w-full py-4 bg-white hover:bg-slate-50 active:scale-95 border border-slate-200 text-slate-700 font-extrabold text-sm rounded-2xl transition-all flex items-center justify-center gap-2">
+            <i class="fab fa-whatsapp text-emerald-500"></i> Ada Masalah? Hubungi Admin
+          </a>
+        </div>
+      </div>
+
+      <!-- STATE: STOK HABIS -->
+      <div id="state-stokhabis" class="hidden text-center">
+        <div class="pop w-20 h-20 rounded-[1.8rem] bg-amber-50 border-2 border-amber-200 flex items-center justify-center mx-auto mb-5">
+          <i class="fas fa-box-open text-amber-500 text-4xl"></i>
+        </div>
+        <h1 class="font-extrabold text-xl text-slate-800 mb-2">Pembayaran Diterima ✅</h1>
+        <p class="text-sm text-slate-500 font-medium mb-6">Pembayaran sudah masuk, tapi stok akun sedang habis. Admin akan menghubungimu segera.</p>
+        <a href="https://wa.me/6285750173207" target="_blank"
+           class="w-full block py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm rounded-2xl flex items-center justify-center gap-2 mb-3">
+          <i class="fab fa-whatsapp"></i> Hubungi Admin Sekarang
+        </a>
+        <a href="/" class="w-full block py-4 bg-white border border-slate-200 text-slate-700 font-extrabold text-sm rounded-2xl flex items-center justify-center gap-2">
+          <i class="fas fa-home"></i> Kembali ke Toko
+        </a>
+      </div>
+
+      <!-- STATE: EXPIRED -->
+      <div id="state-expired" class="hidden text-center">
+        <div class="pop w-20 h-20 rounded-[1.8rem] bg-rose-50 border-2 border-rose-200 flex items-center justify-center mx-auto mb-5">
+          <i class="fas fa-clock text-rose-500 text-4xl"></i>
+        </div>
+        <h1 class="font-extrabold text-xl text-slate-800 mb-2">Pembayaran Kadaluarsa</h1>
+        <p class="text-sm text-slate-500 font-medium mb-6">Waktu pembayaran habis. Silakan buat pesanan baru.</p>
+        <a href="/" class="w-full block py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm rounded-2xl flex items-center justify-center gap-2">
+          <i class="fas fa-redo"></i> Pesan Lagi
+        </a>
+      </div>
+
+      <!-- STATE: ERROR / TIMEOUT -->
+      <div id="state-error" class="hidden text-center">
+        <div class="pop w-20 h-20 rounded-[1.8rem] bg-rose-50 border-2 border-rose-200 flex items-center justify-center mx-auto mb-5">
+          <i class="fas fa-exclamation-triangle text-rose-500 text-4xl"></i>
+        </div>
+        <h1 class="font-extrabold text-xl text-slate-800 mb-2">Cek Status Gagal</h1>
+        <p class="text-sm text-slate-500 font-medium mb-4" id="error-msg">Hubungi admin dengan nomor referensi berikut:</p>
+        <p class="text-xs font-mono font-bold text-slate-600 bg-white border border-slate-200 rounded-xl px-4 py-3 mb-5" id="error-ref">—</p>
+        <a href="https://wa.me/6285750173207" target="_blank"
+           class="w-full block py-4 bg-emerald-500 text-white font-extrabold text-sm rounded-2xl flex items-center justify-center gap-2 mb-3">
+          <i class="fab fa-whatsapp"></i> Hubungi Admin
+        </a>
+        <a href="/" class="w-full block py-4 bg-white border border-slate-200 text-slate-700 font-extrabold text-sm rounded-2xl flex items-center justify-center gap-2">
+          <i class="fas fa-home"></i> Kembali ke Toko
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="py-5 text-center text-[10px] text-slate-400 font-semibold border-t border-slate-100">
+    © 2025 Everastore · Premium Digital Store
+  </footer>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const ref    = params.get("ref")    || "";
+  const produk = params.get("produk") ? decodeURIComponent(params.get("produk")) : "—";
+
+  document.getElementById("info-produk").textContent = produk;
+  document.getElementById("info-ref").textContent    = ref || "—";
+
+  const states = ["loading","sukses","stokhabis","expired","error"];
+  function tampilState(nama) {
+    states.forEach(s => document.getElementById(`state-${s}`).classList.toggle("hidden", s !== nama));
+  }
+
+  function salinAkun() {
+    const teks = document.getElementById("akun-box").innerText.replace(/Salin$/,"").trim();
+    navigator.clipboard.writeText(teks).then(() => {
+      const btn = document.querySelector(".copy-btn");
+      btn.innerHTML = '<i class="fas fa-check mr-1"></i>Tersalin!';
+      setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy mr-1"></i>Salin'; }, 2000);
+    });
+  }
+  window.salinAkun = salinAkun;
+
+  function tampilSukses(akun) {
+    document.getElementById("sukses-produk").textContent = produk;
+    document.getElementById("sukses-ref").textContent    = ref;
+    // Format akun: coba parse JSON, kalau bukan JSON tampilkan apa adanya
+    let tampilan = akun;
+    try {
+      const obj = JSON.parse(akun);
+      tampilan  = Object.entries(obj).map(([k,v]) => `${k}: ${v}`).join("\n");
+    } catch { /* bukan JSON */ }
+    // Set teks tanpa hapus tombol Salin
+    const box       = document.getElementById("akun-box");
+    box.firstChild.textContent = tampilan;
+    tampilState("sukses");
+  }
+
+  const MAX_POLL    = 30;
+  const INTERVAL_MS = 5000;
+  let   pollCount   = 0;
+  let   pollTimer   = null;
+
+  async function cekStatus() {
+    if (!ref) {
+      document.getElementById("error-ref").textContent = "Parameter ref tidak ada di URL";
+      tampilState("error");
+      return;
+    }
+    pollCount++;
+    const pct = Math.round((pollCount / MAX_POLL) * 100);
+    document.getElementById("poll-counter").textContent  = `${pollCount} / ${MAX_POLL}`;
+    document.getElementById("progress-fill").style.width = `${pct}%`;
+    document.getElementById("poll-msg").textContent      = `Pengecekan ke-${pollCount}...`;
+
+    try {
+      const resp = await fetch(`/api/payments/status/${ref}`);
+      const data = await resp.json();
+
+      if (data.status === "sukses" && data.akun) {
+        clearInterval(pollTimer);
+        tampilSukses(data.akun);
+        return;
+      }
+      if (data.status === "stok_habis") { clearInterval(pollTimer); tampilState("stokhabis"); return; }
+      if (data.status === "expired")    { clearInterval(pollTimer); tampilState("expired");   return; }
+
+      document.getElementById("poll-msg").textContent = "Menunggu konfirmasi pembayaran...";
+    } catch {
+      document.getElementById("poll-msg").textContent = "Gagal terhubung, mencoba lagi...";
+    }
+
+    if (pollCount >= MAX_POLL) {
+      clearInterval(pollTimer);
+      document.getElementById("error-ref").textContent = ref;
+      tampilState("error");
+    }
+  }
+
+  cekStatus();
+  pollTimer = setInterval(cekStatus, INTERVAL_MS);
+</script>
+</body>
+</html>

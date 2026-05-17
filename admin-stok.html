@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Admin Stok - Everastore</title>
+  <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/Everazy/EVERASTORE/refs/heads/main/EVERASTORE.jpeg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+    .fadeup { animation: fadeUp 0.3s ease forwards; }
+    .tab-btn.active { background:#4f46e5; color:#fff; box-shadow:0 4px 12px rgba(79,70,229,.3); }
+    textarea { resize: vertical; }
+    .badge-stok  { background:#dcfce7; color:#16a34a; }
+    .badge-habis { background:#fee2e2; color:#dc2626; }
+    .badge-pending  { background:#fef9c3; color:#ca8a04; }
+    .badge-sukses   { background:#dcfce7; color:#16a34a; }
+    .badge-stok_habis { background:#fee2e2; color:#dc2626; }
+    .badge-expired  { background:#f1f5f9; color:#64748b; }
+    .badge-sukses_manual { background:#ede9fe; color:#7c3aed; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Nav -->
+  <nav class="bg-white/90 backdrop-blur border-b sticky top-0 z-50 px-6 py-4">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <div>
+        <span class="font-extrabold text-indigo-600 text-xl uppercase tracking-tighter">Everastore</span>
+        <span class="ml-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-lg">Admin Panel</span>
+      </div>
+      <button onclick="logout()" class="text-[11px] font-bold text-slate-400 hover:text-rose-500 transition-colors flex items-center gap-1">
+        <i class="fas fa-sign-out-alt"></i> Keluar
+      </button>
+    </div>
+  </nav>
+
+  <!-- LOGIN SCREEN -->
+  <div id="screen-login" class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-sm">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-lock text-white text-2xl"></i>
+        </div>
+        <h1 class="font-extrabold text-2xl text-slate-900">Login Admin</h1>
+        <p class="text-sm text-slate-500 mt-1">Masuk untuk kelola stok akun</p>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <div class="mb-4">
+          <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">Email</label>
+          <input id="login-email" type="email" placeholder="admin@everastore.biz.id"
+                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-indigo-400 transition-colors">
+        </div>
+        <div class="mb-5">
+          <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">Password</label>
+          <input id="login-pass" type="password" placeholder="••••••••"
+                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-indigo-400 transition-colors"
+                 onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <div id="login-error" class="hidden bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold rounded-xl px-4 py-3 mb-4"></div>
+        <button onclick="doLogin()" id="btn-login"
+                class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold text-sm rounded-xl transition-all">
+          Masuk
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN DASHBOARD -->
+  <div id="screen-dashboard" class="hidden flex-1 flex flex-col">
+    <div class="max-w-5xl mx-auto w-full px-4 py-6 flex-1">
+
+      <!-- Tabs -->
+      <div class="flex gap-2 mb-6 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm">
+        <button class="tab-btn active flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all" onclick="gotoTab('stok')" id="tab-stok">
+          <i class="fas fa-boxes mr-1"></i> Stok Akun
+        </button>
+        <button class="tab-btn flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-slate-500 hover:bg-slate-50" onclick="gotoTab('orders')" id="tab-orders">
+          <i class="fas fa-receipt mr-1"></i> Orders
+        </button>
+      </div>
+
+      <!-- ══ TAB STOK ══ -->
+      <div id="panel-stok">
+
+        <!-- Form Tambah Akun -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-5">
+          <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">
+            <i class="fas fa-plus-circle text-indigo-400 mr-1"></i> Tambah Stok Akun
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Kode Produk</label>
+              <input id="input-kode" type="text" placeholder="Contoh: #CC1 atau #ML86"
+                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-indigo-400 transition-colors font-mono">
+              <p class="text-[10px] text-slate-400 mt-1 font-medium">Harus sama persis dengan kode di produk</p>
+            </div>
+            <div>
+              <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Nama Produk</label>
+              <input id="input-nama" type="text" placeholder="Contoh: CapCut Premium 1 Hari"
+                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-indigo-400 transition-colors">
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5">
+              Akun <span class="font-normal text-slate-400">(1 akun per baris, format bebas — misal: email|password)</span>
+            </label>
+            <textarea id="input-akun" rows="6" placeholder="user1@gmail.com|password123&#10;user2@gmail.com|password456&#10;user3@gmail.com|password789"
+                      class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono font-semibold outline-none focus:border-indigo-400 transition-colors"></textarea>
+          </div>
+          <div id="tambah-error" class="hidden bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold rounded-xl px-4 py-3 mb-3"></div>
+          <div id="tambah-success" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs font-semibold rounded-xl px-4 py-3 mb-3"></div>
+          <button onclick="tambahStok()" id="btn-tambah"
+                  class="py-3 px-6 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold text-sm rounded-xl transition-all">
+            <i class="fas fa-plus mr-1"></i> Tambah ke Stok
+          </button>
+        </div>
+
+        <!-- Daftar Stok -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+              <i class="fas fa-list text-slate-300 mr-1"></i> Semua Stok
+            </p>
+            <button onclick="muatStok()" class="text-[10px] font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-wider">
+              <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+          </div>
+          <div id="stok-list">
+            <p class="text-sm text-slate-400 font-semibold text-center py-8">Memuat stok...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB ORDERS ══ -->
+      <div id="panel-orders" class="hidden">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+              <i class="fas fa-receipt text-slate-300 mr-1"></i> Semua Order
+            </p>
+            <button onclick="muatOrders()" class="text-[10px] font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-wider">
+              <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+          </div>
+          <div id="orders-list">
+            <p class="text-sm text-slate-400 font-semibold text-center py-8">Memuat orders...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL DELIVER MANUAL -->
+  <div id="modal-deliver" class="hidden fixed inset-0 z-50 flex items-end justify-center p-4 pb-6">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="tutupModalDeliver()"></div>
+    <div class="relative w-full max-w-md bg-white rounded-[2rem] p-6 shadow-2xl">
+      <h3 class="font-extrabold text-base text-slate-900 mb-1">Deliver Manual</h3>
+      <p class="text-xs text-slate-500 font-semibold mb-4" id="deliver-ref-label">—</p>
+      <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Isi Akun yang Akan Dikirim</label>
+      <textarea id="deliver-akun" rows="4" placeholder="email|password atau format lain..."
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono font-semibold outline-none focus:border-indigo-400 transition-colors mb-4"></textarea>
+      <div class="flex gap-3">
+        <button onclick="tutupModalDeliver()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-sm rounded-xl transition-all">Batal</button>
+        <button onclick="kirimDeliverManual()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm rounded-xl transition-all">Kirim Akun</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  let adminToken    = localStorage.getItem("eva_admin_token") || "";
+  let deliverTarget = "";
+
+  // ── Login ─────────────────────────────────────────────────
+  async function doLogin() {
+    const email = document.getElementById("login-email").value.trim();
+    const pass  = document.getElementById("login-pass").value;
+    const errEl = document.getElementById("login-error");
+    const btn   = document.getElementById("btn-login");
+    errEl.classList.add("hidden");
+    btn.disabled = true; btn.textContent = "Memproses...";
+
+    try {
+      const resp = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass }),
+      });
+      const data = await resp.json();
+      if (data.ok) {
+        adminToken = data.token || "admin";
+        localStorage.setItem("eva_admin_token", adminToken);
+        masukDashboard();
+      } else {
+        errEl.textContent = data.message || "Login gagal";
+        errEl.classList.remove("hidden");
+      }
+    } catch {
+      errEl.textContent = "Gagal terhubung ke server";
+      errEl.classList.remove("hidden");
+    }
+    btn.disabled = false; btn.textContent = "Masuk";
+  }
+
+  function masukDashboard() {
+    document.getElementById("screen-login").classList.add("hidden");
+    document.getElementById("screen-dashboard").classList.remove("hidden");
+    muatStok();
+  }
+
+  function logout() {
+    localStorage.removeItem("eva_admin_token");
+    adminToken = "";
+    document.getElementById("screen-login").classList.remove("hidden");
+    document.getElementById("screen-dashboard").classList.add("hidden");
+  }
+
+  // Auto-login jika ada token tersimpan
+  if (adminToken) masukDashboard();
+
+  // ── Tabs ──────────────────────────────────────────────────
+  function gotoTab(nama) {
+    ["stok","orders"].forEach(t => {
+      document.getElementById(`panel-${t}`).classList.toggle("hidden", t !== nama);
+      const btn = document.getElementById(`tab-${t}`);
+      btn.classList.toggle("active", t === nama);
+      if (t !== nama) { btn.classList.add("text-slate-500"); btn.classList.remove("text-white"); }
+      else { btn.classList.remove("text-slate-500"); }
+    });
+    if (nama === "orders") muatOrders();
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function authHeader() {
+    return { "Content-Type": "application/json", "x-admin-token": adminToken };
+  }
+
+  // ── Stok ──────────────────────────────────────────────────
+  async function muatStok() {
+    const el = document.getElementById("stok-list");
+    el.innerHTML = '<p class="text-sm text-slate-400 font-semibold text-center py-8">Memuat...</p>';
+    try {
+      const resp = await fetch("/api/stok", { headers: authHeader() });
+      if (resp.status === 401) { logout(); return; }
+      const data = await resp.json();
+      const stok = data.data || {};
+      const keys = Object.keys(stok);
+      if (keys.length === 0) {
+        el.innerHTML = '<p class="text-sm text-slate-400 font-semibold text-center py-8">Belum ada stok. Tambahkan di atas.</p>';
+        return;
+      }
+      el.innerHTML = keys.map(kode => {
+        const entry = stok[kode];
+        const jml   = entry.akun?.length || 0;
+        const badge = jml > 0
+          ? `<span class="badge-stok text-[10px] font-black px-2 py-1 rounded-lg">${jml} akun</span>`
+          : `<span class="badge-habis text-[10px] font-black px-2 py-1 rounded-lg">STOK HABIS</span>`;
+        const akunList = (entry.akun || []).map((a, i) => `
+          <div class="flex items-center justify-between gap-2 py-2 border-b border-slate-50 last:border-0">
+            <span class="font-mono text-xs text-slate-600 font-semibold truncate flex-1">${i+1}. ${a}</span>
+            <button onclick="hapusAkun('${kode}', ${JSON.stringify(a)})"
+                    class="text-[10px] text-rose-400 hover:text-rose-600 font-black flex-shrink-0 px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>`).join("");
+        return `
+          <div class="border border-slate-100 rounded-xl mb-3 overflow-hidden fadeup">
+            <div class="flex items-center justify-between p-4 bg-slate-50">
+              <div>
+                <span class="font-mono font-black text-indigo-600 text-sm">${kode}</span>
+                <span class="ml-2 text-sm font-semibold text-slate-600">${entry.namaProduk || ""}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                ${badge}
+                <button onclick="kosongkanStok('${kode}')"
+                        class="text-[10px] text-slate-400 hover:text-rose-500 font-black px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors">
+                  <i class="fas fa-trash-alt"></i> Kosongkan
+                </button>
+              </div>
+            </div>
+            ${jml > 0 ? `<div class="px-4 py-2 max-h-48 overflow-y-auto">${akunList}</div>` : ""}
+          </div>`;
+      }).join("");
+    } catch {
+      el.innerHTML = '<p class="text-sm text-rose-400 font-semibold text-center py-8">Gagal memuat stok.</p>';
+    }
+  }
+
+  async function tambahStok() {
+    const kode  = document.getElementById("input-kode").value.trim();
+    const nama  = document.getElementById("input-nama").value.trim();
+    const raw   = document.getElementById("input-akun").value.trim();
+    const errEl = document.getElementById("tambah-error");
+    const okEl  = document.getElementById("tambah-success");
+    errEl.classList.add("hidden"); okEl.classList.add("hidden");
+
+    if (!kode) { errEl.textContent = "Kode produk wajib diisi"; errEl.classList.remove("hidden"); return; }
+    if (!raw)  { errEl.textContent = "Akun wajib diisi"; errEl.classList.remove("hidden"); return; }
+
+    const akun = raw.split("\n").map(s => s.trim()).filter(Boolean);
+    const btn  = document.getElementById("btn-tambah");
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
+
+    try {
+      const resp = await fetch("/api/stok/tambah", {
+        method: "POST", headers: authHeader(),
+        body: JSON.stringify({ kode, namaProduk: nama, akun }),
+      });
+      const data = await resp.json();
+      if (data.ok) {
+        okEl.textContent = `✅ ${data.message} — Total stok: ${data.jumlah} akun`;
+        okEl.classList.remove("hidden");
+        document.getElementById("input-akun").value = "";
+        muatStok();
+      } else {
+        errEl.textContent = data.message || "Gagal tambah stok";
+        errEl.classList.remove("hidden");
+      }
+    } catch {
+      errEl.textContent = "Gagal terhubung ke server";
+      errEl.classList.remove("hidden");
+    }
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus mr-1"></i> Tambah ke Stok';
+  }
+
+  async function hapusAkun(kode, akun) {
+    if (!confirm(`Hapus akun: ${akun}?`)) return;
+    await fetch("/api/stok/hapus", {
+      method: "DELETE", headers: authHeader(),
+      body: JSON.stringify({ kode, akun }),
+    });
+    muatStok();
+  }
+
+  async function kosongkanStok(kode) {
+    if (!confirm(`Kosongkan SEMUA stok untuk ${kode}?`)) return;
+    await fetch(`/api/stok/${encodeURIComponent(kode)}`, { method: "DELETE", headers: authHeader() });
+    muatStok();
+  }
+
+  // ── Orders ────────────────────────────────────────────────
+  async function muatOrders() {
+    const el = document.getElementById("orders-list");
+    el.innerHTML = '<p class="text-sm text-slate-400 font-semibold text-center py-8">Memuat...</p>';
+    try {
+      const resp = await fetch("/api/orders", { headers: authHeader() });
+      if (resp.status === 401) { logout(); return; }
+      const data = await resp.json();
+      const list = data.data || [];
+      if (list.length === 0) {
+        el.innerHTML = '<p class="text-sm text-slate-400 font-semibold text-center py-8">Belum ada order.</p>';
+        return;
+      }
+      el.innerHTML = list.map(o => {
+        const tgl    = new Date(o.createdAt).toLocaleString("id-ID");
+        const status = o.status || "pending";
+        const badgeClass = `badge-${status}`;
+        const akunInfo = o.akunDikirim
+          ? `<p class="text-[10px] font-mono text-emerald-600 mt-1 bg-emerald-50 rounded-lg px-2 py-1">${o.akunDikirim}</p>`
+          : "";
+        const deliverBtn = (!o.delivered && status !== "expired")
+          ? `<button onclick="bukaModalDeliver('${o.merchantRef}')"
+                    class="text-[10px] font-black text-indigo-500 hover:text-indigo-700 px-2 py-1 rounded-lg hover:bg-indigo-50 transition-colors">
+               <i class="fas fa-hand-holding mr-1"></i>Deliver Manual
+             </button>` : "";
+        return `
+          <div class="border border-slate-100 rounded-xl p-4 mb-3 fadeup">
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <div class="flex-1">
+                <p class="font-bold text-slate-800 text-sm">${o.namaProduk}</p>
+                <p class="font-mono text-[10px] text-slate-400 font-semibold">${o.merchantRef}</p>
+              </div>
+              <span class="${badgeClass} text-[10px] font-black px-2 py-1 rounded-lg flex-shrink-0">${status}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-x-4 text-[11px] text-slate-500 font-semibold mb-2">
+              <span>📱 ${o.phone}</span>
+              <span>💰 Rp ${Number(o.harga||0).toLocaleString("id-ID")}</span>
+              <span>🔖 ${o.kodeProduk}</span>
+              <span>🕐 ${tgl}</span>
+            </div>
+            ${akunInfo}
+            ${deliverBtn}
+          </div>`;
+      }).join("");
+    } catch {
+      el.innerHTML = '<p class="text-sm text-rose-400 font-semibold text-center py-8">Gagal memuat orders.</p>';
+    }
+  }
+
+  // ── Deliver Manual ────────────────────────────────────────
+  function bukaModalDeliver(ref) {
+    deliverTarget = ref;
+    document.getElementById("deliver-ref-label").textContent = `Order: ${ref}`;
+    document.getElementById("deliver-akun").value = "";
+    document.getElementById("modal-deliver").classList.remove("hidden");
+  }
+  function tutupModalDeliver() {
+    document.getElementById("modal-deliver").classList.add("hidden");
+    deliverTarget = "";
+  }
+  async function kirimDeliverManual() {
+    const akun = document.getElementById("deliver-akun").value.trim();
+    if (!akun || !deliverTarget) return;
+    await fetch(`/api/orders/${deliverTarget}/deliver`, {
+      method: "POST", headers: authHeader(),
+      body: JSON.stringify({ akun }),
+    });
+    tutupModalDeliver();
+    muatOrders();
+  }
+</script>
+</body>
+</html>
