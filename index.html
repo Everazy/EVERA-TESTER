@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Everastore - Toko Digital Terpercaya</title>
+  <meta name="description" content="Topup game, app premium, dan kebutuhan sosial media murah, cepat, dan terpercaya.">
+  <link rel="icon" type="image/jpeg" href="EVERASTORE.jpeg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+    * { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: #f8fafc; }
+    body.dark { background: #0f172a; color: #f1f5f9; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    body.dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+    /* Nav */
+    .nav-glass { background: rgba(248,250,252,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    body.dark .nav-glass { background: rgba(15,23,42,0.85); }
+
+    /* Card */
+    .card { background: #fff; border: 1px solid #e2e8f0; }
+    body.dark .card { background: #1e293b; border-color: #334155; }
+
+    /* Badge kategori */
+    .kat-btn { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+    .kat-btn.active, .kat-btn:hover { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+    body.dark .kat-btn { background: #1e293b; color: #94a3b8; border-color: #334155; }
+    body.dark .kat-btn.active, body.dark .kat-btn:hover { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+    /* Animasi */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)} }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)} }
+    @keyframes pop { 0%{transform:scale(0.92);opacity:0}100%{transform:scale(1);opacity:1} }
+    .anim-fadeup { animation: fadeUp 0.3s ease forwards; }
+    .anim-pop    { animation: pop 0.25s ease forwards; }
+
+    /* Skeleton */
+    .skeleton { background: linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:8px; }
+    body.dark .skeleton { background: linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%); background-size:200% 100%; }
+    @keyframes shimmer { 0%{background-position:200% 0}100%{background-position:-200% 0} }
+
+    /* Stok badge */
+    .stok-badge { background:#dcfce7; color:#16a34a; }
+    .stok-badge.habis { background:#fee2e2; color:#dc2626; }
+    .stok-badge.sedikit { background:#fef9c3; color:#ca8a04; }
+
+    /* Modal */
+    .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+
+    /* Input */
+    .inp { background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; outline:none; transition: border-color .15s; }
+    .inp:focus { border-color: #4f46e5; }
+    body.dark .inp { background: #0f172a; border-color: #334155; color: #f1f5f9; }
+    body.dark .inp::placeholder { color: #475569; }
+
+    /* Scrollable carousel */
+    .scroll-x { overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+    .scroll-x::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="min-h-screen transition-colors duration-200">
+
+<!-- ══ NAVBAR ══════════════════════════════════════════════════ -->
+<nav class="nav-glass border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+    <a href="/" class="flex items-center gap-2 select-none flex-shrink-0">
+      <img src="EVERASTORE.jpeg" class="w-7 h-7 rounded-lg object-cover" onerror="this.style.display='none'">
+      <div>
+        <span class="font-extrabold text-indigo-600 text-base uppercase tracking-tighter">Everastore</span>
+        <p class="text-[7px] text-slate-400 font-bold uppercase tracking-[0.2em] leading-none">Premium Digital</p>
+      </div>
+    </a>
+
+    <!-- Search -->
+    <div class="flex-1 max-w-xs hidden sm:block">
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input id="search-input" type="text" placeholder="Cari produk..."
+               class="inp w-full pl-8 pr-4 py-2 rounded-xl text-sm font-medium"
+               oninput="filterProduk()">
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Dark mode toggle -->
+      <button onclick="toggleDark()" id="btn-dark"
+              class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i class="fas fa-moon text-sm" id="dark-icon"></i>
+      </button>
+      <!-- Admin -->
+      <a href="/admin/stok"
+         class="hidden sm:flex items-center gap-1.5 text-[11px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-wider transition-colors">
+        <i class="fas fa-lock text-xs"></i> Admin
+      </a>
+    </div>
+  </div>
+  <!-- Search mobile -->
+  <div class="sm:hidden px-4 pb-3">
+    <div class="relative">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+      <input id="search-input-m" type="text" placeholder="Cari produk..."
+             class="inp w-full pl-8 pr-4 py-2 rounded-xl text-sm font-medium"
+             oninput="filterProduk()">
+    </div>
+  </div>
+</nav>
+
+<!-- ══ HERO ════════════════════════════════════════════════════ -->
+<section class="bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 text-white py-10 px-4">
+  <div class="max-w-5xl mx-auto text-center">
+    <div class="inline-flex items-center gap-2 bg-white/15 border border-white/20 rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-widest mb-4">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      Proses Otomatis & Cepat
+    </div>
+    <h1 class="font-extrabold text-2xl sm:text-4xl leading-tight mb-3">
+      Toko Digital <span class="text-yellow-300">Terpercaya</span> & Murah
+    </h1>
+    <p class="text-white/70 text-sm sm:text-base font-medium max-w-md mx-auto mb-6">
+      Topup game, app premium, sosial media — harga bersahabat, akun langsung dikirim otomatis!
+    </p>
+    <div class="flex flex-wrap justify-center gap-4 text-[11px] font-black uppercase tracking-wider">
+      <div class="flex items-center gap-1.5"><i class="fas fa-lock text-emerald-300"></i>Pembayaran QRIS Aman</div>
+      <div class="flex items-center gap-1.5"><i class="fas fa-bolt text-yellow-300"></i>Akun Otomatis</div>
+      <div class="flex items-center gap-1.5"><i class="fab fa-whatsapp text-emerald-300"></i>Support 24 Jam</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ KATEGORI ════════════════════════════════════════════════ -->
+<div class="max-w-5xl mx-auto px-4 pt-6 pb-2">
+  <div class="scroll-x flex gap-2 pb-1" id="kat-tabs">
+    <button class="kat-btn active flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all" data-kat="Semua" onclick="setKategori('Semua',this)">
+      🏠 Semua
+    </button>
+    <button class="kat-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all" data-kat="Game" onclick="setKategori('Game',this)">
+      🎮 Topup Game
+    </button>
+    <button class="kat-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all" data-kat="Streaming" onclick="setKategori('Streaming',this)">
+      🎵 Streaming
+    </button>
+    <button class="kat-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all" data-kat="Produktivitas" onclick="setKategori('Produktivitas',this)">
+      🛠 Produktivitas
+    </button>
+    <button class="kat-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all" data-kat="Sosmed" onclick="setKategori('Sosmed',this)">
+      📱 Sosial Media
+    </button>
+  </div>
+</div>
+
+<!-- ══ PRODUK GRID ══════════════════════════════════════════════ -->
+<main class="max-w-5xl mx-auto px-4 py-4 pb-20">
+  <div id="produk-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+    <!-- Skeleton -->
+    <div class="card rounded-2xl p-4" v-for="i in 8">
+      <div class="skeleton h-10 w-10 rounded-xl mb-3"></div>
+      <div class="skeleton h-3.5 w-3/4 mb-2 rounded"></div>
+      <div class="skeleton h-3 w-1/2 mb-4 rounded"></div>
+      <div class="skeleton h-4 w-1/3 rounded"></div>
+    </div>
+  </div>
+  <p id="produk-kosong" class="hidden text-center text-slate-400 font-semibold py-16">
+    Produk tidak ditemukan 😕
+  </p>
+</main>
+
+<!-- ══ MODAL CHECKOUT QRIS ══════════════════════════════════════ -->
+<div id="modal-checkout" class="hidden fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-0">
+  <div class="modal-overlay absolute inset-0" onclick="tutupModal()"></div>
+  <div class="relative w-full max-w-md sm:rounded-[2rem] rounded-t-[2rem] bg-white dark:bg-slate-900 shadow-2xl overflow-hidden anim-pop sm:mx-4">
+    <!-- Handle -->
+    <div class="flex justify-center pt-3 pb-1 sm:hidden">
+      <div class="w-10 h-1 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+    </div>
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 pt-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+      <div>
+        <p class="font-extrabold text-slate-900 dark:text-white text-base">Beli Produk</p>
+        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Bayar via QRIS Sakurupiah</p>
+      </div>
+      <button onclick="tutupModal()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
+        <i class="fas fa-times text-xs"></i>
+      </button>
+    </div>
+
+    <div class="px-6 py-5 space-y-4 max-h-[80vh] overflow-y-auto">
+      <!-- Info produk -->
+      <div class="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-4 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm" id="modal-icon">🛒</div>
+        <div class="flex-1 min-w-0">
+          <p class="font-extrabold text-slate-800 dark:text-white text-sm leading-tight" id="modal-nama">—</p>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5" id="modal-detail">—</p>
+          <div id="modal-stok-info" class="mt-1"></div>
+        </div>
+        <div class="flex-shrink-0 text-right">
+          <p class="font-extrabold text-indigo-600 text-lg" id="modal-harga">—</p>
+          <p class="text-[10px] text-slate-400 font-semibold" id="modal-kode">—</p>
+        </div>
+      </div>
+
+      <!-- Field ID Game (kondisional) -->
+      <div id="field-gameid" class="hidden">
+        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5">
+          ID Game / Akun <span class="text-rose-400">*</span>
+        </label>
+        <input id="inp-gameid" type="text" placeholder="Contoh: 123456789 (Server: 1234)"
+               class="inp w-full px-4 py-3 rounded-xl text-sm font-semibold">
+      </div>
+
+      <!-- Nomor WhatsApp -->
+      <div>
+        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5">
+          Nomor WhatsApp <span class="text-rose-400">*</span>
+        </label>
+        <div class="inp flex items-center gap-2 px-4 py-3 rounded-xl focus-within:border-indigo-400">
+          <span class="text-sm font-black text-slate-400 flex-shrink-0">🇮🇩 +62</span>
+          <div class="w-px h-5 bg-slate-200 dark:bg-slate-700 flex-shrink-0"></div>
+          <input id="inp-phone" type="tel" placeholder="81234567890"
+                 class="flex-1 bg-transparent text-sm font-semibold text-slate-800 dark:text-white outline-none placeholder:text-slate-300">
+        </div>
+        <p class="text-[10px] text-slate-400 font-medium mt-1.5">Untuk konfirmasi jika ada masalah</p>
+      </div>
+
+      <!-- Catatan opsional -->
+      <div>
+        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5">
+          Catatan <span class="text-slate-300 font-normal">(opsional)</span>
+        </label>
+        <input id="inp-catatan" type="text" placeholder="Catatan untuk admin..."
+               class="inp w-full px-4 py-3 rounded-xl text-sm font-semibold">
+      </div>
+
+      <!-- Error -->
+      <div id="checkout-error" class="hidden bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold rounded-xl px-4 py-3"></div>
+
+      <!-- Tombol Bayar -->
+      <button id="btn-bayar" onclick="prosesBayar()"
+              class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold text-sm rounded-2xl transition-all flex items-center justify-center gap-2">
+        <span id="btn-bayar-text"><i class="fas fa-qrcode mr-1"></i> Bayar via QRIS</span>
+        <span id="btn-bayar-loading" class="hidden">
+          <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z"/>
+          </svg>
+        </span>
+      </button>
+
+      <!-- Trust -->
+      <div class="flex justify-center gap-5 pt-1">
+        <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1"><i class="fas fa-lock text-emerald-400"></i>Aman</span>
+        <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1"><i class="fas fa-bolt text-amber-400"></i>Otomatis</span>
+        <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1"><i class="fab fa-whatsapp text-emerald-400"></i>Support 24 Jam</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════════ -->
+<footer class="border-t border-slate-200 dark:border-slate-800 py-6 text-center text-[11px] text-slate-400 font-semibold">
+  © 2025 Everastore · Premium Digital Store ·
+  <a href="/admin/stok" class="hover:text-indigo-500 transition-colors ml-1">Admin</a>
+</footer>
+
+<script>
+// ── Data produk ────────────────────────────────────────────────
+const PRODUK = [
+  // Game
+  { id:"ml-86",   kode:"#ML86",  kat:"Game",          nama:"Mobile Legends 86 Diamond",    detail:"86 Diamond + Bonus",        harga:22000,  icon:"🎮", isGame:true  },
+  { id:"ml-172",  kode:"#ML172", kat:"Game",          nama:"Mobile Legends 172 Diamond",   detail:"172 Diamond + Bonus",       harga:42000,  icon:"🎮", isGame:true  },
+  { id:"ml-wkly", kode:"#MLWK",  kat:"Game",          nama:"Mobile Legends Weekly Pass",   detail:"Weekly Diamond Pass",       harga:19000,  icon:"🎮", isGame:true  },
+  { id:"ff-70",   kode:"#FF70",  kat:"Game",          nama:"Free Fire 70 Diamond",         detail:"70 Diamond FF",             harga:12000,  icon:"🔥", isGame:true  },
+  { id:"ff-140",  kode:"#FF140", kat:"Game",          nama:"Free Fire 140 Diamond",        detail:"140 Diamond FF",            harga:22000,  icon:"🔥", isGame:true  },
+  { id:"pubg-60", kode:"#PB60",  kat:"Game",          nama:"PUBG Mobile 60 UC",            detail:"60 Unknown Cash",           harga:15000,  icon:"🪖", isGame:true  },
+  // Streaming
+  { id:"sptf-1",  kode:"#SP1",   kat:"Streaming",     nama:"Spotify Premium 1 Bulan",      detail:"Individual 30 hari",        harga:19000,  icon:"🎵", isGame:false },
+  { id:"sptf-3",  kode:"#SP3",   kat:"Streaming",     nama:"Spotify Premium 3 Bulan",      detail:"Individual 90 hari",        harga:55000,  icon:"🎵", isGame:false },
+  { id:"yt-1",    kode:"#YT1",   kat:"Streaming",     nama:"YouTube Premium 1 Bulan",      detail:"Tanpa iklan + offline",     harga:29000,  icon:"▶️", isGame:false },
+  // Produktivitas
+  { id:"cc-7",    kode:"#CC1",   kat:"Produktivitas", nama:"CapCut Premium 7 Hari",        detail:"Akses semua fitur pro",     harga:1500,   icon:"🎬", isGame:false },
+  { id:"cc-30",   kode:"#CC2",   kat:"Produktivitas", nama:"CapCut Premium 30 Hari",       detail:"Akses semua fitur pro",     harga:5000,   icon:"🎬", isGame:false },
+  { id:"cnv-30",  kode:"#CNV",   kat:"Produktivitas", nama:"Canva Pro 30 Hari",            detail:"Semua template premium",    harga:15000,  icon:"🎨", isGame:false },
+  { id:"chat-1",  kode:"#GPT",   kat:"Produktivitas", nama:"ChatGPT Plus 1 Bulan",         detail:"GPT-4 unlimited",           harga:150000, icon:"🤖", isGame:false },
+  // Sosmed
+  { id:"ig-1k",   kode:"#IG1K",  kat:"Sosmed",        nama:"1.000 Followers Instagram",    detail:"Real & aktif",              harga:25000,  icon:"📸", isGame:false },
+  { id:"ig-lk",   kode:"#IGLK",  kat:"Sosmed",        nama:"500 Likes Instagram",          detail:"Per postingan",             harga:10000,  icon:"❤️", isGame:false },
+  { id:"yt-sub",  kode:"#YTS",   kat:"Sosmed",        nama:"1.000 Subscriber YouTube",     detail:"Real subscriber",           harga:45000,  icon:"▶️", isGame:false },
+  { id:"tt-1k",   kode:"#TT1K",  kat:"Sosmed",        nama:"1.000 Followers TikTok",       detail:"Real & aktif",              harga:20000,  icon:"🎵", isGame:false },
+];
+
+let produkTampil = [...PRODUK];
+let katAktif     = "Semua";
+let selectedProduk = null;
+
+// ── Dark mode ──────────────────────────────────────────────────
+function toggleDark() {
+  document.body.classList.toggle("dark");
+  const isDark = document.body.classList.contains("dark");
+  localStorage.setItem("dark", isDark ? "1" : "");
+  document.getElementById("dark-icon").className = isDark ? "fas fa-sun text-sm" : "fas fa-moon text-sm";
+}
+if (localStorage.getItem("dark")) {
+  document.body.classList.add("dark");
+  document.getElementById("dark-icon").className = "fas fa-sun text-sm";
+}
+
+// ── Format rupiah ──────────────────────────────────────────────
+function rp(n) { return "Rp " + Number(n).toLocaleString("id-ID"); }
+
+// ── Render grid ───────────────────────────────────────────────
+function renderGrid(list) {
+  const grid   = document.getElementById("produk-grid");
+  const kosong = document.getElementById("produk-kosong");
+  if (list.length === 0) { grid.innerHTML = ""; kosong.classList.remove("hidden"); return; }
+  kosong.classList.add("hidden");
+  grid.innerHTML = list.map((p, i) => `
+    <button onclick='bukaProduk(${JSON.stringify(p)})'
+            class="card rounded-2xl p-4 text-left hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 anim-fadeup"
+            style="animation-delay:${i*30}ms">
+      <div class="text-2xl mb-2">${p.icon}</div>
+      <p class="font-extrabold text-slate-800 dark:text-white text-sm leading-tight mb-1">${p.nama}</p>
+      <p class="text-[11px] text-slate-400 dark:text-slate-500 font-medium mb-3">${p.detail}</p>
+      <div class="flex items-end justify-between gap-2">
+        <p class="font-extrabold text-indigo-600 text-base">${rp(p.harga)}</p>
+        <span class="text-[9px] font-black text-slate-400 uppercase">${p.kode}</span>
+      </div>
+      <div class="mt-2 w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl text-center transition-colors">
+        Beli Sekarang
+      </div>
+    </button>
+  `).join("");
+}
+
+function filterProduk() {
+  const q = (document.getElementById("search-input")?.value ||
+             document.getElementById("search-input-m")?.value || "").toLowerCase().trim();
+  let list = katAktif === "Semua" ? PRODUK : PRODUK.filter(p => p.kat === katAktif);
+  if (q) list = list.filter(p => p.nama.toLowerCase().includes(q) || p.kode.toLowerCase().includes(q) || p.detail.toLowerCase().includes(q));
+  renderGrid(list);
+}
+
+function setKategori(kat, el) {
+  katAktif = kat;
+  document.querySelectorAll(".kat-btn").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  filterProduk();
+}
+
+// ── Buka modal ────────────────────────────────────────────────
+async function bukaProduk(p) {
+  selectedProduk = p;
+  document.getElementById("modal-icon").textContent  = p.icon;
+  document.getElementById("modal-nama").textContent  = p.nama;
+  document.getElementById("modal-detail").textContent = p.detail;
+  document.getElementById("modal-harga").textContent = rp(p.harga);
+  document.getElementById("modal-kode").textContent  = p.kode;
+  document.getElementById("field-gameid").classList.toggle("hidden", !p.isGame);
+  document.getElementById("inp-gameid").value  = "";
+  document.getElementById("inp-phone").value   = "";
+  document.getElementById("inp-catatan").value = "";
+  sembunyikanError();
+  setBtnLoading(false);
+  document.getElementById("modal-checkout").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+
+  // Cek stok
+  const stokEl = document.getElementById("modal-stok-info");
+  stokEl.innerHTML = '<span class="text-[10px] text-slate-300 font-semibold">Mengecek stok...</span>';
+  try {
+    const resp = await fetch(`/api/stok/${encodeURIComponent(p.kode)}`);
+    const data = await resp.json();
+    const jml  = data.jumlah || 0;
+    if (jml === 0) {
+      stokEl.innerHTML = '<span class="stok-badge habis text-[10px] font-black px-2 py-0.5 rounded-lg">⚠️ Stok Habis</span>';
+    } else if (jml <= 3) {
+      stokEl.innerHTML = `<span class="stok-badge sedikit text-[10px] font-black px-2 py-0.5 rounded-lg">⚡ Stok: ${jml} tersisa</span>`;
+    } else {
+      stokEl.innerHTML = `<span class="stok-badge text-[10px] font-black px-2 py-0.5 rounded-lg">✅ Stok: ${jml} tersedia</span>`;
+    }
+  } catch { stokEl.innerHTML = ""; }
+}
+
+function tutupModal() {
+  document.getElementById("modal-checkout").classList.add("hidden");
+  document.body.style.overflow = "";
+  selectedProduk = null;
+}
+
+// ── Checkout ──────────────────────────────────────────────────
+function sembunyikanError() { document.getElementById("checkout-error").classList.add("hidden"); }
+function tampilError(msg) {
+  const el = document.getElementById("checkout-error");
+  el.textContent = msg; el.classList.remove("hidden");
+}
+function setBtnLoading(loading) {
+  document.getElementById("btn-bayar").disabled = loading;
+  document.getElementById("btn-bayar-text").classList.toggle("hidden", loading);
+  document.getElementById("btn-bayar-loading").classList.toggle("hidden", !loading);
+}
+
+async function prosesBayar() {
+  sembunyikanError();
+  const p       = selectedProduk;
+  const phone   = document.getElementById("inp-phone").value.trim();
+  const gameId  = document.getElementById("inp-gameid").value.trim();
+  const catatan = document.getElementById("inp-catatan").value.trim();
+
+  if (!phone) return tampilError("Nomor WhatsApp wajib diisi.");
+  if (!/^[0-9]{8,14}$/.test(phone)) return tampilError("Format nomor WhatsApp tidak valid (tanpa +62/0).");
+  if (p.isGame && !gameId) return tampilError("ID Game wajib diisi untuk produk ini.");
+
+  setBtnLoading(true);
+  try {
+    const resp = await fetch("/api/payments/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ namaProduk: p.nama, kodeProduk: p.kode, harga: p.harga, phone, gameId, catatan }),
+    });
+    const data = await resp.json();
+    if (data.ok && data.checkout_url) {
+      window.location.href = data.checkout_url;
+    } else {
+      tampilError(data.message || "Gagal membuat invoice. Coba lagi.");
+      setBtnLoading(false);
+    }
+  } catch {
+    tampilError("Gagal terhubung ke server. Periksa koneksi kamu.");
+    setBtnLoading(false);
+  }
+}
+
+// ESC tutup modal
+document.addEventListener("keydown", e => { if (e.key === "Escape") tutupModal(); });
+
+// Init
+renderGrid(PRODUK);
+</script>
+</body>
+</html>

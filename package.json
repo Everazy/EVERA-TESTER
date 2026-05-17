@@ -1,0 +1,16 @@
+{
+  "name": "everastore",
+  "version": "3.0.0",
+  "description": "Everastore - Toko Digital dengan Sakurupiah Payment Gateway",
+  "type": "module",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "node --watch api/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.18.3",
+    "express-rate-limit": "^7.4.0"
+  }
+}
